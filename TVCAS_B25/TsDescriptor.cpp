@@ -2,10 +2,12 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#include "stdafx.h"
-#include "Common.h"
+#include "..\TVCAS_B25\stdafx.h"
+#include "..\TVCAS_B25\Common.h"
 #include "TsDescriptor.h"
 #include "TsEncode.h"
+
+#include <strsafe.h>
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -239,11 +241,13 @@ const BYTE CServiceDesc::GetServiceType(void) const
 	return m_byServiceType;
 }
 
+
+
 const DWORD CServiceDesc::GetProviderName(LPTSTR lpszDst, int MaxLength) const
 {
 	// Service Provider Nameを返す
 	if (lpszDst && MaxLength > 0)
-		::lstrcpyn(lpszDst, m_szProviderName, MaxLength);
+		::StringCchCopy(lpszDst, MaxLength, m_szProviderName);
 
 	return ::lstrlen(m_szProviderName);
 }
@@ -252,7 +256,7 @@ const DWORD CServiceDesc::GetServiceName(LPTSTR lpszDst, int MaxLength) const
 {
 	// Service Provider Nameを返す
 	if (lpszDst && MaxLength > 0)
-		::lstrcpyn(lpszDst, m_szServiceName, MaxLength);
+		::StringCchCopy(lpszDst, MaxLength, m_szServiceName);
 
 	return ::lstrlen(m_szServiceName);
 }
@@ -346,7 +350,7 @@ const DWORD CShortEventDesc::GetEventName(LPTSTR lpszDst, int MaxLength) const
 {
 	// Event Nameを返す
 	if (lpszDst && MaxLength > 0)
-		::lstrcpyn(lpszDst, m_szEventName, MaxLength);
+		::StringCchCopy(lpszDst, MaxLength, m_szEventName);
 
 	return ::lstrlen(m_szEventName);
 }
@@ -355,7 +359,7 @@ const DWORD CShortEventDesc::GetEventDesc(LPTSTR lpszDst, int MaxLength) const
 {
 	// Event Descriptionを返す
 	if (lpszDst && MaxLength > 0)
-		::lstrcpyn(lpszDst, m_szEventDesc, MaxLength);
+		::StringCchCopy(lpszDst, MaxLength, m_szEventDesc);
 
 	return ::lstrlen(m_szEventDesc);
 }
@@ -608,7 +612,8 @@ void CNetworkNameDesc::Reset(void)
 const DWORD CNetworkNameDesc::GetNetworkName(LPTSTR pszName, int MaxLength) const
 {
 	if (pszName && MaxLength > 0)
-		::lstrcpyn(pszName, m_szNetworkName, MaxLength);
+		::StringCchCopy(pszName, MaxLength, m_szNetworkName);
+
 	return ::lstrlen(m_szNetworkName);
 }
 
@@ -1046,7 +1051,8 @@ const BYTE CTSInfoDesc::GetRemoteControlKeyID(void) const
 const DWORD CTSInfoDesc::GetTSName(LPTSTR pszName, int MaxLength) const
 {
 	if (pszName && MaxLength > 0)
-		::lstrcpyn(pszName, m_szTSName, MaxLength);
+		::StringCchCopy(pszName, MaxLength, m_szTSName);
+
 	return ::lstrlen(m_szTSName);
 }
 
@@ -1139,7 +1145,8 @@ const DWORD CComponentDesc::GetLanguageCode(void) const
 const DWORD CComponentDesc::GetText(LPTSTR pszText, int MaxLength) const
 {
 	if (pszText && MaxLength > 0)
-		::lstrcpyn(pszText, m_szText, MaxLength);
+		::StringCchCopy(pszText, MaxLength, m_szText);
+
 	return ::lstrlen(m_szText);
 }
 
@@ -1276,7 +1283,8 @@ const DWORD CAudioComponentDesc::GetLanguageCode2(void) const
 const DWORD CAudioComponentDesc::GetText(LPTSTR pszText, int MaxLength) const
 {
 	if (pszText && MaxLength > 0)
-		::lstrcpyn(pszText, m_szText, MaxLength);
+		::StringCchCopy(pszText, MaxLength, m_szText);
+
 	return ::lstrlen(m_szText);
 }
 
@@ -1451,9 +1459,10 @@ WORD CLogoTransmissionDesc::GetDownloadDataID() const
 
 int CLogoTransmissionDesc::GetLogoChar(char *pChar, int MaxLength) const
 {
-	if (pChar == 0 || MaxLength <= 0)
-		return 0;
-	::lstrcpynA(pChar, m_LogoChar, MaxLength);
+	if (pChar == 0 || MaxLength <= 0) return 0;
+
+	::StringCchCopyA(pChar, MaxLength, m_LogoChar);
+
 	return ::lstrlenA(m_LogoChar);
 }
 
@@ -1584,9 +1593,10 @@ WORD CSeriesDesc::GetLastEpisodeNumber() const
 
 int CSeriesDesc::GetSeriesName(LPTSTR pszName, int MaxName) const
 {
-	if (pszName == NULL || MaxName <= 0)
-		return 0;
-	::lstrcpyn(pszName, m_szSeriesName, MaxName);
+	if (pszName == NULL || MaxName <= 0) return 0;
+
+	::StringCchCopy(pszName, MaxName, m_szSeriesName);
+
 	return ::lstrlen(m_szSeriesName);
 }
 
@@ -1942,7 +1952,7 @@ void CCaContractInfoDesc::CopyDesc(const CBaseDesc *pOperand)
 		m_ContractVerificationInfoLength = pSrcDesc->m_ContractVerificationInfoLength;
 		::CopyMemory(m_ContractVerificationInfo, pSrcDesc->m_ContractVerificationInfo,
 					 pSrcDesc->m_ContractVerificationInfoLength);
-		::lstrcpyn(m_szFeeName, pSrcDesc->m_szFeeName, MAX_FEE_NAME);
+		::StringCchCopy(m_szFeeName, MAX_FEE_NAME, pSrcDesc->m_szFeeName);
 	}
 }
 
@@ -1997,7 +2007,7 @@ BYTE CCaContractInfoDesc::GetContractVerificationInfo(BYTE *pInfo, BYTE MaxLengt
 int CCaContractInfoDesc::GetFeeName(LPTSTR pszName, int MaxName) const
 {
 	if (pszName && MaxName > 0)
-		::lstrcpyn(pszName, m_szFeeName, MaxName);
+		::StringCchCopy(pszName, MaxName, m_szFeeName);
 
 	return ::lstrlen(m_szFeeName);
 }

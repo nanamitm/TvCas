@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+﻿#include "..\TVCAS_B25\stdafx.h"
 #include "StdUtil.h"
 #include <new>
 

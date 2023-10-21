@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "MediaData.h"
+#include "..\TVCAS_B25\MediaData.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE

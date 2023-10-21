@@ -212,7 +212,7 @@ void Decode(BYTE * __restrict pData, const DWORD dwSize,
 			RoundFuncPi4(CbcLeft, CbcRight, pWorkKey->dwKey8);
 		}
 
-		BYTE Remain[8];
+		BYTE Remain[8] = { 0 };
 		*(DWORD*)(Remain + 0) = CbcLeft;
 		*(DWORD*)(Remain + 4) = CbcRight;
 		switch (RemainSize) {
@@ -629,7 +629,7 @@ void DecodeSSE2(BYTE * __restrict pData, const DWORD dwSize,
 			RoundFuncPi4(CbcLeft, CbcRight, pWorkKey->dwKey8);
 		}
 
-		BYTE Remain[8];
+		BYTE Remain[8] = { 0 };
 		*(DWORD*)(Remain + 0) = CbcLeft;
 		*(DWORD*)(Remain + 4) = CbcRight;
 		switch (RemainSize) {
@@ -952,7 +952,7 @@ void DecodeSSSE3(BYTE * __restrict pData, const DWORD dwSize,
 			RoundFuncPi4(CbcLeft, CbcRight, pWorkKey->dwKey8);
 		}
 
-		BYTE Remain[8];
+		BYTE Remain[8] = { 0 };
 		*(DWORD*)(Remain + 0) = CbcLeft;
 		*(DWORD*)(Remain + 4) = CbcRight;
 		switch (RemainSize) {

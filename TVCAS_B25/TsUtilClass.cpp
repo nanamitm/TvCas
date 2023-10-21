@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "TsUtilClass.h"
+#include "..\TVCAS_B25\TsUtilClass.h"
 #include "StdUtil.h"
 
 #ifdef _DEBUG

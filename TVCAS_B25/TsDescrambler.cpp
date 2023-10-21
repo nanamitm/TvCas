@@ -2,11 +2,13 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#include "stdafx.h"
-#include "Common.h"
+#include "..\TVCAS_B25\stdafx.h"
+#include "..\TVCAS_B25\Common.h"
 #include "TsDescrambler.h"
-#include "Multi2Decoder.h"
-#include "TsEncode.h"
+#include "..\TVCAS_B25\Multi2Decoder.h"
+#include "..\TVCAS_B25\TsEncode.h"
+
+#include "..\TVCAS_B25\IniConfig.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -20,10 +22,6 @@ static char THIS_FILE[]=__FILE__;
 // EMM処理を行う期間
 #define EMM_PROCESS_TIME	(7 * 24)
 
-#if EMMLOG
-#include <fstream>
-#define LOGNAME		"Emmlog.txt"
-#endif
 
 // ECM処理内部クラス
 class CEcmProcessor
@@ -32,9 +30,7 @@ class CEcmProcessor
 {
 public:
 	CEcmProcessor(CTsDescrambler *pDescrambler);
-#if EMMLOG
-	virtual ~CEmmProcessor(){ emmlog << "// Log close()" << std::endl; emmlog.close(); }
-#endif
+
 	const bool DescramblePacket(CTsPacket *pTsPacket);
 	const bool SetScrambleKey(CCasCard *pCasCard, const BYTE *pEcmData, DWORD EcmSize);
 
@@ -77,6 +73,7 @@ class CEmmProcessor
 {
 public:
 	CEmmProcessor(CTsDescrambler *pDescrambler);
+
 	const bool ProcessEmm(CCasCard *pCasCard, const BYTE *pData, const DWORD DataSize);
 
 private:
@@ -88,9 +85,6 @@ private:
 	const bool OnTableUpdate(const CPsiSection *pCurSection) override;
 
 	CTsDescrambler *m_pDescrambler;
-#if EMMLOG
-	std::ofstream emmlog;
-#endif
 };
 
 // ESスクランブル解除内部クラス
@@ -140,7 +134,7 @@ class CEcmAccess : public CCasAccess
 
 	// コピー禁止
 	CEcmAccess(const CEcmAccess &Src);
-	CEcmAccess &operator=(const CEcmAccess &Src);
+	//CEcmAccess &operator=(const CEcmAccess &Src);
 
 public:
 	CEcmAccess(CEcmProcessor *pEcmProcessor, const BYTE *pData, DWORD Size, CLocalEvent *pEvent)
@@ -172,7 +166,7 @@ class CEmmAccess : public CCasAccess
 
 	// コピー禁止
 	CEmmAccess(const CEmmAccess &Src);
-	CEmmAccess &operator=(const CEmmAccess &Src);
+	//CEmmAccess &operator=(const CEmmAccess &Src);
 
 public:
 	CEmmAccess(CEmmProcessor *pEmmProcessor, const BYTE *pData, DWORD Size)
@@ -1232,13 +1226,20 @@ const bool CEcmProcessor::OnTableUpdate(const CPsiSection *pCurSection, const CP
 		return false;
 
 	// ECMが変わったらキー取得が成功するまで無効にする
+#ifdef TVCAS_B1_EXPORTS
+	// (最初ECM本体のKsが変化したか比較するようにしたが、
+	//  ECM本体とECM応答のKsの変化は一致するわけではない)
+#endif
+#ifdef TVCAS_B25_EXPORTS
 	m_Multi2Lock.Lock();
 	if (m_LastChangedKey == 1) {
 		m_bEvenKeyValid = false;
-	} else if (m_LastChangedKey == 2) {
+	}
+	else if (m_LastChangedKey == 2) {
 		m_bOddKeyValid = false;
 	}
 	m_Multi2Lock.Unlock();
+#endif
 
 	// 前のECM処理が終わるまで待つ
 	if (!m_EcmProcessEvent.IsSignaled()) {
@@ -1296,7 +1297,7 @@ const bool CEcmProcessor::SetScrambleKey(CCasCard *pCasCard, const BYTE *pEcmDat
 		if (!pKsData && !m_bLastEcmSucceed
 				&& ErrorCode != CCasCard::ERR_CARDNOTOPEN) {
 			if (!m_bEcmErrorSent && m_EcmPID < 0x1FFF) {
-				CTsDescrambler::EcmErrorInfo Info;
+				CTsDescrambler::EcmErrorInfo Info{};
 
 				Info.pszText = pCasCard->GetLastErrorText();
 				Info.EcmPID = m_EcmPID;
@@ -1395,35 +1396,21 @@ const bool CEmmProcessor::OnTableUpdate(const CPsiSection *pCurSection)
 		return true;
 
 	WORD Pos = 0;
+#ifdef TVCAS_B25_EXPORTS
 	while (DataSize >= Pos + 17) {
 		const WORD EmmSize = (WORD)pHexData[Pos + 6] + 7;
 		if (EmmSize < 17 || EmmSize > MAX_EMM_DATA_SIZE || DataSize < Pos + EmmSize)
 			break;
-
-#if EMMLOG
-		{
-			int n = 0;
-			char buf[1024];
-			for (int i = 0; i < EmmSize; i++)
-			{
-				BYTE b = pHexData[Pos + i];
-
-				if ((b >> 4) < 10)
-					buf[n++] = '0' + (b >> 4);
-				else
-					buf[n++] = 'a' + (b >> 4) - 10;
-
-				if ((b & 0x0f) < 10)
-					buf[n++] = '0' + (b & 0x0f);
-				else
-					buf[n++] = 'a' + (b & 0x0f) - 10;
-
-				buf[n++] = ' ';
-			}
-			buf[n-1] = 0;
-			emmlog << buf << std::endl;
-		}
 #endif
+#ifdef TVCAS_B1_EXPORTS
+	while (DataSize >= Pos + 101) {
+		const WORD EmmSize = DataSize;// B1では1セクションに一つのEMM
+		if (EmmSize < 6 || EmmSize > MAX_EMM_DATA_SIZE || DataSize < Pos + EmmSize)// EMMサイズは最低でもCard ID分(6Byte)以上
+			break; 
+#endif
+
+		IniConfig::g_Config.WriteEMMLogingData(pHexData + Pos, EmmSize);
+
 		if (::memcmp(pCardID, &pHexData[Pos], 6) == 0) {
 			SYSTEMTIME st;
 			const CTotTable *pTotTable = dynamic_cast<const CTotTable*>(m_pDescrambler->m_PidMapManager.GetMapTarget(PID_TOT));
@@ -1431,7 +1418,7 @@ const bool CEmmProcessor::OnTableUpdate(const CPsiSection *pCurSection)
 				break;
 
 			FILETIME ft;
-			ULARGE_INTEGER TotTime, LocalTime;
+			ULARGE_INTEGER TotTime{}, LocalTime{};
 
 			::SystemTimeToFileTime(&st, &ft);
 			TotTime.LowPart = ft.dwLowDateTime;
@@ -1460,7 +1447,7 @@ const bool CEmmProcessor::ProcessEmm(CCasCard *pCasCard, const BYTE *pData, DWOR
 	if (pCasCard->SendEmmSection(pData, DataSize)) {
 		m_pDescrambler->SendDecoderEvent(CTsDescrambler::EVENT_EMM_PROCESSED, NULL);
 	} else {
-		CTsDescrambler::EmmErrorInfo Info;
+		CTsDescrambler::EmmErrorInfo Info{};
 		Info.pszText = pCasCard->GetLastErrorText();
 		m_pDescrambler->SendDecoderEvent(CTsDescrambler::EVENT_EMM_ERROR, &Info);
 	}
@@ -1477,10 +1464,6 @@ CTsDescrambler::CEsProcessor::CEsProcessor(CEcmProcessor *pEcmProcessor)
 	: CTsPidMapTarget()
 	, m_pEcmProcessor(pEcmProcessor)
 {
-#if EMMLOG
-	emmlog.open(LOGNAME, std::ios::app);
-	emmlog << "// Log open()" << std::endl;
-#endif
 }
 
 CTsDescrambler::CEsProcessor::~CEsProcessor()
@@ -1511,8 +1494,12 @@ void CTsDescrambler::CEsProcessor::OnPidUnmapped(const WORD wPID)
 
 CCasAccessQueue::CCasAccessQueue(CCasCard *pCasCard)
 	: m_pCasCard(pCasCard)
+	, m_ReaderType(CCardReader::READER_NONE)
+	, m_pszReaderName(NULL)
+	, m_Event()
 	, m_hThread(NULL)
 	, m_bAvailable(false)
+	, m_bStartEvent(false)
 	, m_bKillEvent(false)
 {
 }
@@ -1560,7 +1547,9 @@ bool CCasAccessQueue::BeginCasThread(CCardReader::ReaderType ReaderType, LPCTSTR
 	if (m_hThread == NULL)
 		return false;
 	if (m_Event.Wait(20000) == WAIT_TIMEOUT) {
+#pragma warning( disable : 6258 )
 		::TerminateThread(m_hThread, -1);
+#pragma warning( default : 6258 )
 		::CloseHandle(m_hThread);
 		m_hThread = NULL;
 		SetError(TEXT("カードリーダーのオープンで、カードリーダーが応答しません。"));
@@ -1586,7 +1575,9 @@ bool CCasAccessQueue::EndCasThread()
 		m_Event.Set();
 		if (::WaitForSingleObject(m_hThread, 5000) == WAIT_TIMEOUT) {
 			TRACE(TEXT("Terminate CasAccessThread\n"));
+#pragma warning( disable : 6258 )
 			::TerminateThread(m_hThread, -1);
+#pragma warning( default : 6258 )
 		}
 		::CloseHandle(m_hThread);
 		m_hThread = NULL;

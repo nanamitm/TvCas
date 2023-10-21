@@ -5,8 +5,8 @@
 #pragma once
 
 
-#include "Common.h"
-#include "MediaData.h"
+#include "..\TVCAS_B25\Common.h"
+#include "..\TVCAS_B25\MediaData.h"
 
 
 /////////////////////////////////////////////////////////////////////////////

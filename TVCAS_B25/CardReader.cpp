@@ -1,6 +1,9 @@
-﻿#include "stdafx.h"
-#include "CardReader.h"
-#include "StdUtil.h"
+﻿#include "..\TVCAS_B25\stdafx.h"
+#include "..\TVCAS_B25\CardReader.h"
+#include "..\TVCAS_B25\StdUtil.h"
+#include "..\TVCAS_B25\IniConfig.h"
+#include <strsafe.h>
+
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -12,6 +15,7 @@ static char THIS_FILE[]=__FILE__;
 
 
 CCardReader::CCardReader()
+	:m_ReaderType(READER_NONE)
 {
 }
 
@@ -211,19 +215,21 @@ static DWORD GetSCardErrorMessage(LONG Code,LPTSTR pszMessage,DWORD MaxLength)
 {
 	LPCTSTR pszText = GetSCardErrorText(Code);
 	DWORD Length = 0;
+
 	if (pszText != NULL) {
 		Length = (DWORD)(::StrStr(pszText, TEXT(" ")) - pszText + 1);
-		if (Length > MaxLength)
-			Length = MaxLength;
-		::lstrcpyn(pszMessage, pszText, Length + 1);
+
+		if (Length > MaxLength)Length = MaxLength;
+		
+		::StringCchCopy(pszMessage, (size_t)Length + 1,pszText);
 	}
 	Length = ::FormatMessage(
 		FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL,
 		Code, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		pszMessage + Length, MaxLength - Length, NULL);
+		pszMessage + Length, (size_t)MaxLength - Length, NULL);
 	if (Length == 0) {
 		if (pszText != NULL)
-			::lstrcpyn(pszMessage, pszText, MaxLength);
+			::StringCchCopy(pszMessage, MaxLength, pszText);
 		else
 			pszMessage[0] = '\0';
 	}
@@ -232,7 +238,7 @@ static DWORD GetSCardErrorMessage(LONG Code,LPTSTR pszMessage,DWORD MaxLength)
 
 static bool CheckReaderList(LPCTSTR pReaderList, DWORD Length)
 {
-	if (Length < 2)
+	if (pReaderList == NULL || Length < 2)
 		return false;
 	return pReaderList[Length - 2] == _T('\0')
 		&& pReaderList[Length - 1] == _T('\0');
@@ -277,7 +283,9 @@ static SCardCheckResult CheckSmartCardService()
 
 	Result = SCARD_CHECK_ERR_QUERY_CONFIG;
 	DWORD Size = 0;
+#pragma warning( disable : 6031 )
 	::QueryServiceConfig(hService, NULL, 0, &Size);
+#pragma warning( default : 6031 )
 	if (Size > 0) {
 		BYTE *pBuffer = new BYTE[Size];
 		QUERY_SERVICE_CONFIG *pConfig = (QUERY_SERVICE_CONFIG*)pBuffer;
@@ -317,12 +325,14 @@ CSCardReader::CSCardReader()
 				reinterpret_cast<LPTSTR>(&m_pReaderList), &dwBuffLength) == SCARD_S_SUCCESS) {
 			if (CheckReaderList(m_pReaderList, dwBuffLength)) {
 				LPCTSTR p = m_pReaderList;
-				while (*p) {
-					TRACE(TEXT(" Reader%d : %s\n"), m_NumReaders, p);
-					m_NumReaders++;
-					p += ::lstrlen(p) + 1;
+				if (p) {
+					while (*p) {
+						TRACE(TEXT(" Reader%d : %s\n"), m_NumReaders, p);
+						m_NumReaders++;
+						p += (size_t)::lstrlen(p) + 1;
+					}
 				}
-			} else {
+			} else if(m_pReaderList) {
 				::SCardFreeMemory(m_SCardContext, m_pReaderList);
 				m_pReaderList = NULL;
 			}
@@ -401,7 +411,20 @@ bool CSCardReader::Open(LPCTSTR pszReader)
 			return false;
 		}
 
-		LPTSTR pszReaderName;
+#ifdef TVCAS_B1_EXPORTS
+		// 初期化コマンドでスカパーHD用CASカードかどうか確認
+		static const BYTE InitSettingCmd[] = { 0x80U, 0x5EU, 0x00U, 0x00U, 0x00U };
+		BYTE tmp[256];
+		DWORD RecvSize = sizeof(tmp);
+		if (!Transmit(InitSettingCmd, sizeof(InitSettingCmd), tmp, &RecvSize) ||
+			RecvSize != 46) {
+			Close();
+			SetError(TEXT("スカパーHD用ではないカードです。"));
+			return false;
+		}
+#endif
+
+		LPTSTR pszReaderName=NULL;
 		BYTE Atr[32];
 		DWORD dwReaderLen = SCARD_AUTOALLOCATE, dwState, dwProtocol, dwAtrLen = sizeof(Atr);
 		TRACE(TEXT("SCardStatus\n"));
@@ -413,12 +436,12 @@ bool CSCardReader::Open(LPCTSTR pszReader)
 			SetError(TEXT("カードの状態を取得できません。"), NULL, szMessage);
 			return false;
 		}
-		TCHAR szAtr[sizeof(Atr) * 3 + 1];
+		TCHAR szAtr[sizeof(Atr) * 3 + 1] = { 0 };
 		for (DWORD i = 0; i < dwAtrLen; i++)
 			::wsprintf(&szAtr[i * 2], TEXT("%02x "), Atr[i]);
 		TRACE(TEXT("\nName : %s\nState : %08x\nProtocol : %u\nATR size : %u\nATR : %s\n"),
 			  pszReaderName, dwState, dwProtocol, dwAtrLen, dwAtrLen ? szAtr : TEXT("n/a"));
-		::SCardFreeMemory(m_SCardContext, pszReaderName);
+		if(pszReaderName) ::SCardFreeMemory(m_SCardContext, pszReaderName);
 
 		m_pszReaderName = StdUtil::strdup(pszReader);
 	} else {
@@ -518,18 +541,18 @@ bool CSCardReader::CheckAvailability(bool *pbAvailable, LPTSTR pszMessage, int M
 	switch (CheckSmartCardService()) {
 	case SCARD_CHECK_ENABLED:
 		if (pszMessage)
-			::lstrcpyn(pszMessage, TEXT("Smart Card サービスは有効です。"), MaxLength);
+			::StringCchCopy(pszMessage, MaxLength, TEXT("Smart Card サービスは有効です。"));
 		bAvailable = true;
 		break;
 
 	case SCARD_CHECK_DISABLED:
 		if (pszMessage)
-			::lstrcpyn(pszMessage, TEXT("Smart Card サービスが無効になっています。"), MaxLength);
+			::StringCchCopy(pszMessage, MaxLength, TEXT("Smart Card サービスが無効になっています。"));
 		break;
 
 	case SCARD_CHECK_ERR_SERVICE_NOT_FOUND:
 		if (pszMessage)
-			::lstrcpyn(pszMessage, TEXT("Smart Card サービスがインストールされていません。"), MaxLength);
+			::StringCchCopy(pszMessage, MaxLength, TEXT("Smart Card サービスがインストールされていません。"));
 		break;
 
 	default:
@@ -590,8 +613,8 @@ template<typename T> bool GetLibraryFunc(HMODULE hLib, T &Func, const char *pSym
 
 CDynamicSCardReader::CDynamicSCardReader()
 	: m_hLib(NULL)
+	, m_SCardContext(0)
 	, m_hSCard(0)
-	, m_pReaderList(NULL)
 	, m_pszReaderName(NULL)
 
 	, m_pSCardReleaseContext(NULL)
@@ -599,6 +622,17 @@ CDynamicSCardReader::CDynamicSCardReader()
 	, m_pSCardDisconnect(NULL)
 	, m_pSCardTransmit(NULL)
 {
+	IniConfig::dlls dll_paths;
+
+	IniConfig::g_Config.GetDynamicSCardReaderPath(dll_paths);
+	IniConfig::g_Config.WriteWPrintf(L"===Reader List ==========\n");
+	for (IniConfig::dlls_i i = dll_paths.begin(); i != dll_paths.end(); i++)
+	{
+		IniConfig::g_Config.WriteWPrintf(L"Reader Path :%s \n", i->c_str());
+
+		AddReaderList(i->c_str());
+	}
+	IniConfig::g_Config.WriteWPrintf(L"===Reader List ==========\n");
 }
 
 
@@ -607,17 +641,80 @@ CDynamicSCardReader::~CDynamicSCardReader()
 	Unload();
 }
 
+bool CDynamicSCardReader::AddReaderList(LPCTSTR pszFileName)
+{
+	SCardEstablishContextFunc pEstablishContext;
+	SCardReleaseContextFunc pSCardReleaseContext;
+	SCARDCONTEXT SCardContext;
+	SCardListReadersFunc pListReaders;
+
+	HMODULE hLib;
+
+	hLib = ::LoadLibrary(pszFileName);
+	if (hLib == NULL) {
+		SetError(TEXT("ライブラリをロードできません。"));
+		return false;
+	}
+
+	if (!GetLibraryFunc(hLib, pEstablishContext, "SCardEstablishContext")
+		|| !GetLibraryFunc(hLib, pSCardReleaseContext, "SCardReleaseContext")
+		|| !GetLibraryFunc(hLib, pListReaders, FUNC_NAME("SCardListReaders"))) {
+		::FreeLibrary(hLib);
+		SetError(TEXT("関数のアドレスを取得できません。"));
+		return false;
+	}
+
+	if (pEstablishContext(SCARD_SCOPE_USER, NULL, NULL, &SCardContext) != SCARD_S_SUCCESS) {
+		::FreeLibrary(hLib);
+		hLib = NULL;
+		SetError(TEXT("コンテキストを確立できません。"));
+		return false;
+	}
+
+	// カードリーダを列挙する
+	DWORD dwBuffLength = 0;
+	bool ret = false;
+
+	if (pListReaders(SCardContext, NULL, NULL, &dwBuffLength) == SCARD_S_SUCCESS)
+	{	
+		TCHAR * pReaderList = new TCHAR[dwBuffLength];
+		if (pListReaders(SCardContext, NULL, pReaderList, &dwBuffLength) == SCARD_S_SUCCESS)
+		{
+			if (CheckReaderList(pReaderList, dwBuffLength))
+			{		
+				for (TCHAR *p = pReaderList; *p != _T('\0'); )
+				{
+					tstring temp = tstring(pszFileName) + _T('|')  +  p;
+
+					m_ReaderList.push_back(temp);
+
+					p += ::lstrlen(p) + 1;
+				}
+				ret = true;
+			}
+			else SetError(TEXT("カードリーダのリストが不正です。"));
+		}
+
+		delete[] pReaderList;
+	}
+	
+	pSCardReleaseContext(SCardContext);
+	::FreeLibrary(hLib);
+
+	return ret;
+}
+
 
 bool CDynamicSCardReader::Load(LPCTSTR pszFileName)
 {
+	if (m_hLib != NULL)	Unload();
+
 	m_hLib = ::LoadLibrary(pszFileName);
 	if (m_hLib == NULL) {
 		SetError(TEXT("ライブラリをロードできません。"));
 		return false;
 	}
 
-	typedef LONG (WINAPI *SCardEstablishContextFunc)(DWORD, LPCVOID, LPCVOID, LPSCARDCONTEXT);
-	typedef LONG (WINAPI *SCardListReadersFunc)(SCARDCONTEXT, LPCTSTR, LPTSTR, LPDWORD);
 	SCardEstablishContextFunc pEstablishContext;
 	SCardListReadersFunc pListReaders;
 
@@ -640,24 +737,27 @@ bool CDynamicSCardReader::Load(LPCTSTR pszFileName)
 		return false;
 	}
 
-	// カードリーダを列挙する
+	// カードリーダを列挙する（チェックのみでデータは使用しない）
 	DWORD dwBuffLength = 0;
+	bool ret = false;
 
-	if (pListReaders(m_SCardContext, NULL, NULL, &dwBuffLength) == SCARD_S_SUCCESS) {
-		m_pReaderList = new TCHAR[dwBuffLength];
-		if (pListReaders(m_SCardContext, NULL, m_pReaderList, &dwBuffLength) == SCARD_S_SUCCESS) {
-			if (!CheckReaderList(m_pReaderList, dwBuffLength)) {
-				Unload();
-				SetError(TEXT("カードリーダのリストが不正です。"));
-				return false;
+	if (pListReaders(m_SCardContext, NULL, NULL, &dwBuffLength) == SCARD_S_SUCCESS)
+	{
+		TCHAR* pReaderList = new TCHAR[dwBuffLength];
+		if (pListReaders(m_SCardContext, NULL, pReaderList, &dwBuffLength) == SCARD_S_SUCCESS)
+		{
+			if (CheckReaderList(pReaderList, dwBuffLength))
+			{
+				ret = true;
 			}
-		} else {
-			delete [] m_pReaderList;
-			m_pReaderList = NULL;
+			else SetError(TEXT("カードリーダのリストが不正です。"));
 		}
+		delete[] pReaderList;
 	}
 
-	return true;
+	if( !ret) Unload();
+
+	return ret;
 }
 
 
@@ -671,11 +771,6 @@ void CDynamicSCardReader::Unload()
 		::FreeLibrary(m_hLib);
 		m_hLib = NULL;
 	}
-
-	if (m_pReaderList) {
-		delete [] m_pReaderList;
-		m_pReaderList = NULL;
-	}
 }
 
 
@@ -683,7 +778,7 @@ void CDynamicSCardReader::Unload()
 bool CDynamicSCardReader::Open(LPCTSTR pszReader)
 {
 	if (pszReader == NULL) {
-		SetError(TEXT("ファイル名が指定されていません。"));
+		SetError(TEXT("ファイル名|ファイル名が指定されていません。"));
 		return false;
 	}
 
@@ -700,7 +795,7 @@ bool CDynamicSCardReader::Open(LPCTSTR pszReader)
 			SetError(TEXT("ファイル名が長過ぎます。"));
 			return false;
 		}
-		::lstrcpyn(szFileName, pszReader, (int)FileNameLength);
+		::StringCchCopy(szFileName, (int)FileNameLength, pszReader);
 	} else {
 		if (::lstrlen(pszReader) >= _countof(szFileName)) {
 			SetError(TEXT("ファイル名が長過ぎます。"));
@@ -708,13 +803,8 @@ bool CDynamicSCardReader::Open(LPCTSTR pszReader)
 		}
 		::lstrcpy(szFileName, pszReader);
 	}
-	if (m_hLib == NULL) {
-		if (!Load(szFileName))
-			return false;
-	} else {
-		// 一旦クローズする
-		Close();
-	}
+	
+	if (!Load(szFileName)) return false;
 
 	if (pszReaderName) {
 		// 指定されたカードリーダに対してオープンを試みる
@@ -738,19 +828,18 @@ bool CDynamicSCardReader::Open(LPCTSTR pszReader)
 		m_pszReaderName = StdUtil::strdup(pszReader);
 	} else {
 		// 全てのカードリーダに対してオープンを試みる
-		if (m_pReaderList == NULL || m_pReaderList[0] == _T('\0')) {
+		if (m_ReaderList.empty()) {
 			SetError(TEXT("カードリーダが見付かりません。"));
 			return false;
 		}
 
-		LPCTSTR p = m_pReaderList;
-		while (*p) {
+		for (READERLIST_i i = m_ReaderList.begin(); i != m_ReaderList.end(); i++) 
+		{
 			TCHAR szReader[MAX_PATH + 256];
 
-			StdUtil::snprintf(szReader, _countof(szReader), TEXT("%s|%s"), szFileName, p);
-			if (Open(szReader))
-				return true;
-			p += ::lstrlen(p) + 1;
+			StdUtil::snprintf(szReader, _countof(szReader), TEXT("%s|%s"), szFileName, i->c_str());
+
+			if (Open(szReader)) return true;
 		}
 		return false;
 	}
@@ -783,28 +872,15 @@ LPCTSTR CDynamicSCardReader::GetReaderName() const
 
 int CDynamicSCardReader::NumReaders() const
 {
-	if (!m_pReaderList)
-		return 0;
-	LPCTSTR p = m_pReaderList;
-	int i;
-	for (i = 0; *p; i++) {
-		p += ::lstrlen(p) + 1;
-	}
-	return i;
+	return (int)m_ReaderList.size();
 }
 
 
 LPCTSTR CDynamicSCardReader::EnumReader(int Index) const
 {
-	if (!m_pReaderList)
-		return NULL;
-	LPCTSTR p = m_pReaderList;
-	for (int i = 0; i < Index; i++) {
-		if (!*p)
-			return NULL;
-		p += ::lstrlen(p) + 1;
-	}
-	return p;
+	if (Index < 0 || (size_t)Index >= m_ReaderList.size()) return NULL;
+
+	return m_ReaderList[Index].c_str();
 }
 
 
@@ -866,6 +942,7 @@ bool CDynamicSCardReader::Transmit(const void *pSendData,DWORD SendSize,void *pR
 
 CBonCasClientCardReader::CBonCasClientCardReader()
 	: m_hLib(NULL)
+	, m_SCardContext()
 	, m_hSCard(0)
 	, m_pReaderList(NULL)
 	, m_pszReaderName(NULL)
@@ -875,12 +952,24 @@ CBonCasClientCardReader::CBonCasClientCardReader()
 	, m_pCasLinkDisconnect(NULL)
 	, m_pCasLinkTransmit(NULL)
 {
+	// ライブラリ読み込み
+	TCHAR szFileName[MAX_PATH];
+	GetModulePath(szFileName);
+	
+	Load(szFileName);
 }
 
 
 CBonCasClientCardReader::~CBonCasClientCardReader()
 {
 	Close();
+
+	if (m_hLib) {
+		m_pCasLinkReleaseContext(m_SCardContext);
+
+		::FreeLibrary(m_hLib);
+		m_hLib = NULL;
+	}
 }
 
 
@@ -968,14 +1057,13 @@ bool CBonCasClientCardReader::Connect(LPCTSTR pszReader)
 
 bool CBonCasClientCardReader::Open(LPCTSTR pszReader)
 {
+	if (m_hLib == NULL) {
+		SetError(TEXT("ライブラリを読み込めません。"));
+		return false;
+	}
+
 	// 一旦クローズする
 	Close();
-
-	// ライブラリ読み込み
-	TCHAR szFileName[MAX_PATH];
-	GetModulePath(szFileName);
-	if (!Load(szFileName))
-		return false;
 
 	if (pszReader) {
 		// 指定されたカードリーダに対して接続を試みる
@@ -1023,13 +1111,6 @@ void CBonCasClientCardReader::Close()
 	if (m_pszReaderName) {
 		delete [] m_pszReaderName;
 		m_pszReaderName = NULL;
-	}
-
-	if (m_hLib) {
-		m_pCasLinkReleaseContext(m_SCardContext);
-
-		::FreeLibrary(m_hLib);
-		m_hLib = NULL;
 	}
 
 	if (m_pReaderList) {
@@ -1096,9 +1177,9 @@ bool CBonCasClientCardReader::CheckAvailability(bool *pbAvailable, LPTSTR pszMes
 
 	if (pszMessage) {
 		if (bAvailable) {
-			::lstrcpyn(pszMessage, BONCASCLIENT_MODULE_NAME TEXT(" が見付かりました。"), MaxLength);
+			::StringCchCopy(pszMessage, MaxLength, BONCASCLIENT_MODULE_NAME TEXT(" が見付かりました。"));
 		} else {
-			::lstrcpyn(pszMessage, BONCASCLIENT_MODULE_NAME TEXT(" が見付かりません。"), MaxLength);
+			::StringCchCopy(pszMessage, MaxLength, BONCASCLIENT_MODULE_NAME TEXT(" が見付かりません。"));
 		}
 	}
 

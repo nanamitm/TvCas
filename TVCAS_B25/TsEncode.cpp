@@ -2,7 +2,7 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#include "stdafx.h"
+#include "..\TVCAS_B25\stdafx.h"
 #include "TsEncode.h"
 
 #ifdef _DEBUG

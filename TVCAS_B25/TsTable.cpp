@@ -2,10 +2,10 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#include "stdafx.h"
-#include "TsTable.h"
-#include "TsEncode.h"
-#include "TsUtilClass.h"
+#include "..\TVCAS_B25\stdafx.h"
+#include "..\TVCAS_B25\TsTable.h"
+#include "..\TVCAS_B25\TsEncode.h"
+#include "..\TVCAS_B25\TsUtilClass.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -706,7 +706,7 @@ const bool CPatTable::OnTableUpdate(const CPsiSection *pCurSection, const CPsiSe
 #endif
 
 	for (WORD wPos = 0 ; wPos < wDataSize ; wPos += 4, pHexData += 4) {
-		TAG_PATITEM PatItem;
+		TAG_PATITEM PatItem{};
 
 		PatItem.wProgramID	= ((WORD)pHexData[0] << 8) | (WORD)pHexData[1];				// +1,2
 		PatItem.wPID		= ((WORD)(pHexData[2] & 0x1FU) << 8) | (WORD)pHexData[3];	// +3,4
@@ -858,6 +858,9 @@ CPmtTable & CPmtTable::operator = (const CPmtTable &Operand)
 	if (this != &Operand) {
 		CPsiSingleTable::operator=(Operand);
 		m_wPcrPID = Operand.m_wPcrPID;
+#ifdef TVCAS_B1_EXPORTS
+		m_wSdEcmPID = Operand.m_wSdEcmPID;
+#endif
 		m_TableDescBlock = Operand.m_TableDescBlock;
 		m_EsInfoArray = Operand.m_EsInfoArray;
 	}
@@ -871,6 +874,9 @@ void CPmtTable::Reset(void)
 	CPsiSingleTable::Reset();
 
 	m_wPcrPID = 0xFFFFU;
+#ifdef TVCAS_B1_EXPORTS
+	m_wSdEcmPID = 0xFFFFU;
+#endif
 	m_TableDescBlock.Reset();
 	m_EsInfoArray.clear();
 }
@@ -897,7 +903,12 @@ const WORD CPmtTable::GetEcmPID(void) const
 	// ECMのPIDを返す
 	const CCaMethodDesc *pCaMethodDesc = dynamic_cast<const CCaMethodDesc *>(m_TableDescBlock.GetDescByTag(CCaMethodDesc::DESC_TAG));
 
+#ifdef TVCAS_B25_EXPORTS
 	return (pCaMethodDesc)? pCaMethodDesc->GetCaPID() : 0xFFFFU;
+#endif
+#ifdef TVCAS_B1_EXPORTS
+	return (pCaMethodDesc) ? pCaMethodDesc->GetCaPID() : m_wSdEcmPID;
+#endif
 }
 
 const WORD CPmtTable::GetEcmPID(const WORD CASystemID) const
@@ -914,7 +925,12 @@ const WORD CPmtTable::GetEcmPID(const WORD CASystemID) const
 		}
 	}
 
+#ifdef TVCAS_B25_EXPORTS
 	return 0xFFFF;
+#endif
+#ifdef TVCAS_B1_EXPORTS
+	return m_wSdEcmPID;
+#endif
 }
 
 const WORD CPmtTable::GetEsInfoNum(void) const
@@ -953,6 +969,9 @@ const bool CPmtTable::OnTableUpdate(const CPsiSection *pCurSection, const CPsiSe
 
 	// 状態をクリアする
 	m_wPcrPID = 0xFFFFU;
+#ifdef TVCAS_B1_EXPORTS
+	m_wSdEcmPID = 0xFFFFU;
+#endif
 	m_EsInfoArray.clear();
 
 	// テーブルを解析する
@@ -991,6 +1010,18 @@ const bool CPmtTable::OnTableUpdate(const CPsiSection *pCurSection, const CPsiSe
 
 		// テーブルに追加する
 		m_EsInfoArray.push_back(PmtItem);
+
+#ifdef TVCAS_B1_EXPORTS
+		if ((m_wSdEcmPID > 0x1FFFU) && (pCurSection->GetTableIdExtension() < 32768)) {
+			const CBaseDesc* pDesc = PmtItem.DescBlock.GetDescByTag(CCaMethodDesc::DESC_TAG);
+			if (pDesc != NULL) {
+				const CCaMethodDesc* pCaDesc = dynamic_cast<const CCaMethodDesc*>(pDesc);
+				if ((pCaDesc != NULL) && (pCaDesc->GetCaMethodID() == 0x01U)) {
+					m_wSdEcmPID = pCaDesc->GetCaPID();
+				}
+			}
+		}
+#endif
 	}
 
 	return true;
@@ -1004,6 +1035,7 @@ const bool CPmtTable::OnTableUpdate(const CPsiSection *pCurSection, const CPsiSe
 CSdtTable::CSdtTable(const BYTE TableID)
 	: CPsiSingleTable()
 	, m_TableID(TableID)
+	, m_wNetworkID(0)
 {
 
 }
@@ -1145,7 +1177,7 @@ const bool CSdtTable::OnTableUpdate(const CPsiSection *pCurSection, const CPsiSe
 		  pCurSection->GetTableIdExtension(), m_wNetworkID);
 
 	// テーブルを解析する
-	WORD wDescLen;
+	WORD wDescLen{};
 	for (WORD wPos = 3 ; wPos + 5 <= wDataSize ; wPos += 5 + wDescLen) {
 		TAG_SDTITEM SdtItem;
 
@@ -1513,6 +1545,7 @@ const bool CEitPfTable::OnTableUpdate(const CPsiSection *pCurSection)
 CTotTable::CTotTable()
 	: CPsiSingleTable(false)
 	, m_bValidDateTime(false)
+	, m_DateTime(SYSTEMTIME())
 {
 }
 
@@ -1811,7 +1844,7 @@ const bool CSdttTable::OnTableUpdate(const CPsiSection *pCurSection)
 
 		if (ScheduleDescLength) {
 			for (DWORD j = 0; j + 8 <= ScheduleDescLength; j += 8) {
-				ScheduleDescription Schedule;
+				ScheduleDescription Schedule{};
 
 				CAribTime::AribToSystemTime(&pHexData[Pos + j], &Schedule.StartTime);
 				Schedule.Duration = CAribTime::AribBcdToSecond(&pHexData[Pos + j + 5]);

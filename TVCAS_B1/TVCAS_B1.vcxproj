@@ -30,27 +30,27 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -104,6 +104,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;TVCAS_B1_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -122,6 +123,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;TVCAS_B1_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -146,6 +148,7 @@
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -171,6 +174,7 @@
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -183,44 +187,48 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="BonBaseClass.cpp" />
-    <ClCompile Include="CardReader.cpp" />
-    <ClCompile Include="CasCard.cpp" />
-    <ClCompile Include="Exception.cpp" />
-    <ClCompile Include="MediaData.cpp" />
-    <ClCompile Include="MediaDecoder.cpp" />
-    <ClCompile Include="Multi2Decoder.cpp" />
-    <ClCompile Include="stdafx.cpp" />
-    <ClCompile Include="StdUtil.cpp" />
-    <ClCompile Include="TsDescrambler.cpp" />
-    <ClCompile Include="TsDescriptor.cpp" />
-    <ClCompile Include="TsEncode.cpp" />
-    <ClCompile Include="TsPacketParser.cpp" />
-    <ClCompile Include="TsStream.cpp" />
-    <ClCompile Include="TsTable.cpp" />
-    <ClCompile Include="TsUtilClass.cpp" />
-    <ClCompile Include="TVCAS_B1.cpp" />
+    <ClCompile Include="..\TVCAS_B25\BonBaseClass.cpp" />
+    <ClCompile Include="..\TVCAS_B25\CardReader.cpp" />
+    <ClCompile Include="..\TVCAS_B25\CasCard.cpp" />
+    <ClCompile Include="..\TVCAS_B25\Exception.cpp" />
+    <ClCompile Include="..\TVCAS_B25\IniConfig.cpp" />
+    <ClCompile Include="..\TVCAS_B25\Main.cpp" />
+    <ClCompile Include="..\TVCAS_B25\MediaData.cpp" />
+    <ClCompile Include="..\TVCAS_B25\MediaDecoder.cpp" />
+    <ClCompile Include="..\TVCAS_B25\Multi2Decoder.cpp" />
+    <ClCompile Include="..\TVCAS_B25\stdafx.cpp" />
+    <ClCompile Include="..\TVCAS_B25\StdUtil.cpp" />
+    <ClCompile Include="..\TVCAS_B25\TsDescrambler.cpp" />
+    <ClCompile Include="..\TVCAS_B25\TsDescriptor.cpp" />
+    <ClCompile Include="..\TVCAS_B25\TsEncode.cpp" />
+    <ClCompile Include="..\TVCAS_B25\TsPacketParser.cpp" />
+    <ClCompile Include="..\TVCAS_B25\TsStream.cpp" />
+    <ClCompile Include="..\TVCAS_B25\TsTable.cpp" />
+    <ClCompile Include="..\TVCAS_B25\TsUtilClass.cpp" />
+    <ClCompile Include="..\TVCAS_B25\UtilFileIO.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BonBaseClass.h" />
-    <ClInclude Include="CardReader.h" />
-    <ClInclude Include="CasCard.h" />
-    <ClInclude Include="Common.h" />
-    <ClInclude Include="Exception.h" />
-    <ClInclude Include="MediaData.h" />
-    <ClInclude Include="MediaDecoder.h" />
-    <ClInclude Include="Multi2Decoder.h" />
-    <ClInclude Include="stdafx.h" />
-    <ClInclude Include="StdUtil.h" />
-    <ClInclude Include="TsDescrambler.h" />
-    <ClInclude Include="TsDescriptor.h" />
-    <ClInclude Include="TsEncode.h" />
-    <ClInclude Include="TsPacketParser.h" />
-    <ClInclude Include="TsStream.h" />
-    <ClInclude Include="TsTable.h" />
-    <ClInclude Include="TsUtilClass.h" />
-    <ClInclude Include="TVCAS.h" />
-    <ClInclude Include="TVCAS_B1.h" />
+    <ClInclude Include="..\TVCAS_B25\BonBaseClass.h" />
+    <ClInclude Include="..\TVCAS_B25\CardReader.h" />
+    <ClInclude Include="..\TVCAS_B25\CasCard.h" />
+    <ClInclude Include="..\TVCAS_B25\Common.h" />
+    <ClInclude Include="..\TVCAS_B25\Exception.h" />
+    <ClInclude Include="..\TVCAS_B25\IniConfig.h" />
+    <ClInclude Include="..\TVCAS_B25\MediaData.h" />
+    <ClInclude Include="..\TVCAS_B25\MediaDecoder.h" />
+    <ClInclude Include="..\TVCAS_B25\Multi2Decoder.h" />
+    <ClInclude Include="..\TVCAS_B25\stdafx.h" />
+    <ClInclude Include="..\TVCAS_B25\StdUtil.h" />
+    <ClInclude Include="..\TVCAS_B25\TsDescrambler.h" />
+    <ClInclude Include="..\TVCAS_B25\TsDescriptor.h" />
+    <ClInclude Include="..\TVCAS_B25\TsEncode.h" />
+    <ClInclude Include="..\TVCAS_B25\TsPacketParser.h" />
+    <ClInclude Include="..\TVCAS_B25\TsStream.h" />
+    <ClInclude Include="..\TVCAS_B25\TsTable.h" />
+    <ClInclude Include="..\TVCAS_B25\TsUtilClass.h" />
+    <ClInclude Include="..\TVCAS_B25\TVCAS.h" />
+    <ClInclude Include="..\TVCAS_B25\UtilFileIO.h" />
+    <ClInclude Include="Main.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="TVCAS_B1.rc" />

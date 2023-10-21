@@ -7,9 +7,12 @@
 
 #include <vector>
 #include <map>
-#include "MediaData.h"
-#include "TsStream.h"
-#include "TsDescriptor.h"
+
+#include <windows.h>
+
+#include "..\TVCAS_B25\MediaData.h"
+#include "..\TVCAS_B25\TsStream.h"
+#include "..\TVCAS_B25\TsDescriptor.h"
 
 
 using std::vector;
@@ -297,7 +300,7 @@ class CCatTable : public CPsiSingleTable
 public:
 	CCatTable();
 	virtual ~CCatTable(void);
-	CCatTable(const CCatTable &Operand);
+	CCatTable(const CCatTable& Operand) {};
 
 	CCatTable  & operator = (const CCatTable &Operand);
 
@@ -349,6 +352,10 @@ public:
 	const WORD GetEsPID(const WORD wIndex) const;
 	const CDescBlock * GetItemDesc(const WORD wIndex) const;
 
+#ifdef TVCAS_B1_EXPORTS
+	WORD GetSdEcmPID() const { return(m_wSdEcmPID); };
+#endif
+
 protected:
 	virtual const bool OnTableUpdate(const CPsiSection *pCurSection, const CPsiSection *pOldSection);
 
@@ -363,6 +370,10 @@ protected:
 
 	WORD m_wPcrPID;						// PCR_PID
 	CDescBlock m_TableDescBlock;		// Conditional Access Method Descriptor 他
+
+#ifdef TVCAS_B1_EXPORTS
+	WORD m_wSdEcmPID;
+#endif
 
 #ifdef _DEBUG
 	bool m_bDebugTrace;
@@ -511,14 +522,14 @@ protected:
 
 	struct EventInfo {
 		bool bEnable;
-		WORD EventID;
-		bool bValidStartTime;
-		SYSTEMTIME StartTime;
-		DWORD Duration;
-		BYTE RunningStatus;
-		bool FreeCaMode;
+		WORD EventID{ 0 };
+		bool bValidStartTime{};
+		SYSTEMTIME StartTime{};
+		DWORD Duration{};
+		BYTE RunningStatus{};
+		bool FreeCaMode{};
 		CDescBlock DescBlock;
-		EventInfo() : bEnable(false) {}
+		EventInfo() : bEnable(false){}
 	};
 
 	struct ServiceInfo {

@@ -5,7 +5,11 @@
 #define CARDREADER_BONCASCLIENT_SUPPORT
 
 #include <winscard.h>
-#include "BonBaseClass.h"
+
+#include <string>
+#include <vector>
+
+#include "..\TVCAS_B25\BonBaseClass.h"
 
 
 // カードリーダー基底クラス
@@ -73,11 +77,18 @@ public:
 #ifdef CARDREADER_SCARD_DYNAMIC_SUPPORT
 class CDynamicSCardReader : public CCardReader
 {
+	typedef std::basic_string<TCHAR> tstring;
+
 	HMODULE m_hLib;
 	SCARDCONTEXT m_SCardContext;
 	SCARDHANDLE m_hSCard;
-	LPTSTR m_pReaderList;
 	LPTSTR m_pszReaderName;
+
+	typedef std::vector<tstring> READERLIST;
+	typedef std::vector<tstring>::iterator  READERLIST_i;
+
+	READERLIST m_ReaderList;
+
 	typedef LONG (WINAPI *SCardReleaseContextFunc)(SCARDCONTEXT);
 	typedef LONG (WINAPI *SCardConnectFunc)(SCARDCONTEXT, LPCTSTR, DWORD, DWORD, LPSCARDHANDLE, LPDWORD);
 	typedef LONG (WINAPI *SCardDisconnectFunc)(SCARDHANDLE, DWORD);
@@ -88,6 +99,11 @@ class CDynamicSCardReader : public CCardReader
 	SCardDisconnectFunc m_pSCardDisconnect;
 	SCardTransmitFunc m_pSCardTransmit;
 
+	typedef LONG(WINAPI* SCardEstablishContextFunc)(DWORD, LPCVOID, LPCVOID, LPSCARDCONTEXT);
+	typedef LONG(WINAPI* SCardListReadersFunc)(SCARDCONTEXT, LPCTSTR, LPTSTR, LPDWORD);
+
+	bool AddReaderList(LPCTSTR pszFileName);
+	
 	bool Load(LPCTSTR pszFileName);
 	void Unload();
 

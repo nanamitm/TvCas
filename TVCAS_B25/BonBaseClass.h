@@ -2,8 +2,8 @@
 #define BON_BASE_CLASS_H
 
 
-#include "Exception.h"
-#include "TsUtilClass.h"
+#include "..\TVCAS_B25\Exception.h"
+#include "..\TVCAS_B25\TsUtilClass.h"
 
 
 class __declspec(novtable) CBonBaseClass : public CBonErrorHandler

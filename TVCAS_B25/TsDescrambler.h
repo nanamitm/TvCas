@@ -8,11 +8,11 @@
 #include <deque>
 #include <vector>
 #include <map>
-#include "MediaDecoder.h"
-#include "TsStream.h"
+#include "..\TVCAS_B25\MediaDecoder.h"
+#include "..\TVCAS_B25\TsStream.h"
 #include "TsTable.h"
-#include "TsUtilClass.h"
-#include "CasCard.h"
+#include "..\TVCAS_B25\TsUtilClass.h"
+#include "..\TVCAS_B25\CasCard.h"
 
 
 class CEcmProcessor;

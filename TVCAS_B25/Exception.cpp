@@ -1,7 +1,8 @@
 ﻿#include "stdafx.h"
 #include <new>
-#include "Exception.h"
+#include "..\TVCAS_B25\Exception.h"
 #include "StdUtil.h"
+#include "IniConfig.h"
 
 
 
@@ -106,6 +107,8 @@ void CBonException::SetText(LPCTSTR pszText)
 	}
 	if (pszText!=NULL) {
 		try {
+			IniConfig::g_Config.WriteErroMsg(pszText);
+
 			m_pszText=StdUtil::strdup(pszText);
 		} catch (std::bad_alloc&) {
 			//m_pszText=NULL;
@@ -139,6 +142,7 @@ void CBonException::SetSystemMessage(LPCTSTR pszSystemMessage)
 	if (pszSystemMessage!=NULL) {
 		try {
 			m_pszSystemMessage=StdUtil::strdup(pszSystemMessage);
+
 		} catch (std::bad_alloc&) {
 			//m_pszSystemMessage=NULL;
 		}

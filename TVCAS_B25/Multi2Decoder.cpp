@@ -203,6 +203,9 @@ CMulti2Decoder::CMulti2Decoder(
 	, m_pSSE2WorkKeyOdd(NULL)
 	, m_pSSE2WorkKeyEven(NULL)
 #endif
+	, m_InitialCbc()
+	, m_SystemKey()
+	, m_WorkKeyOdd(), m_WorkKeyEven()
 {
 #ifdef MULTI2_SIMD
 	if (m_Instruction != INSTRUCTION_NORMAL) {

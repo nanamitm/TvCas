@@ -5,7 +5,7 @@
 #pragma once
 
 
-#include "MediaDecoder.h"
+#include "..\TVCAS_B25\MediaDecoder.h"
 #include "TsStream.h"
 
 

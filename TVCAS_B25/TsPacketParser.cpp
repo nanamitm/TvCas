@@ -2,8 +2,8 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#include "stdafx.h"
-#include "TsPacketParser.h"
+#include "..\TVCAS_B25\stdafx.h"
+#include "..\TVCAS_B25\TsPacketParser.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -164,7 +164,7 @@ void inline CTsPacketParser::SyncPacket(const BYTE *pData, const DWORD dwSize)
 
 bool inline CTsPacketParser::ParsePacket(void)
 {
-	bool bOK;
+	bool bOK=false;
 
 	// 入力カウントインクリメント
 	m_InputPacketCount++;
@@ -173,6 +173,7 @@ bool inline CTsPacketParser::ParsePacket(void)
 	switch (m_TsPacket.ParsePacket(m_abyContCounter)) {
 	case CTsPacket::EC_CONTINUITY:
 		m_ContinuityErrorPacketCount++;
+		[[fallthrough]];
 	case CTsPacket::EC_VALID:
 		// 次のデコーダにデータを渡す
 		if (m_bOutputNullPacket || m_TsPacket.GetPID() != 0x1FFFU) {

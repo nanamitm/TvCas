@@ -5,10 +5,10 @@
 #pragma once
 
 
-#include "Common.h"
-#include "BonBaseClass.h"
-#include "MediaData.h"
-#include "TsUtilClass.h"
+#include "..\TVCAS_B25\Common.h"
+#include "..\TVCAS_B25\BonBaseClass.h"
+#include "..\TVCAS_B25\MediaData.h"
+#include "..\TVCAS_B25\TsUtilClass.h"
 
 
 //////////////////////////////////////////////////////////////////////

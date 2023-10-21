@@ -129,7 +129,7 @@ public:
 
 class CTracer
 {
-	TCHAR m_szBuffer[256];
+	TCHAR m_szBuffer[256]{};
 public:
 	virtual ~CTracer() {}
 	void Trace(LPCTSTR pszOutput, ...);

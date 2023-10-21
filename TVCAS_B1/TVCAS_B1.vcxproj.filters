@@ -15,114 +15,126 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="BonBaseClass.cpp">
+    <ClCompile Include="..\TVCAS_B25\UtilFileIO.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
-    <ClCompile Include="CardReader.cpp">
+    <ClCompile Include="..\TVCAS_B25\IniConfig.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
-    <ClCompile Include="CasCard.cpp">
+    <ClCompile Include="..\TVCAS_B25\BonBaseClass.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
-    <ClCompile Include="Exception.cpp">
+    <ClCompile Include="..\TVCAS_B25\TsUtilClass.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
-    <ClCompile Include="MediaData.cpp">
+    <ClCompile Include="..\TVCAS_B25\MediaData.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
-    <ClCompile Include="MediaDecoder.cpp">
+    <ClCompile Include="..\TVCAS_B25\Exception.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
-    <ClCompile Include="Multi2Decoder.cpp">
+    <ClCompile Include="..\TVCAS_B25\MediaDecoder.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
-    <ClCompile Include="stdafx.cpp">
+    <ClCompile Include="..\TVCAS_B25\Multi2Decoder.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
-    <ClCompile Include="TsDescrambler.cpp">
+    <ClCompile Include="..\TVCAS_B25\stdafx.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
-    <ClCompile Include="TsDescriptor.cpp">
+    <ClCompile Include="..\TVCAS_B25\StdUtil.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
-    <ClCompile Include="TsPacketParser.cpp">
+    <ClCompile Include="..\TVCAS_B25\TsDescriptor.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
-    <ClCompile Include="TsStream.cpp">
+    <ClCompile Include="..\TVCAS_B25\TsEncode.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
-    <ClCompile Include="TsTable.cpp">
+    <ClCompile Include="..\TVCAS_B25\TsPacketParser.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
-    <ClCompile Include="TsUtilClass.cpp">
+    <ClCompile Include="..\TVCAS_B25\TsStream.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
-    <ClCompile Include="TVCAS_B1.cpp">
+    <ClCompile Include="..\TVCAS_B25\CasCard.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
-    <ClCompile Include="TsEncode.cpp">
+    <ClCompile Include="..\TVCAS_B25\CardReader.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
-    <ClCompile Include="StdUtil.cpp">
+    <ClCompile Include="..\TVCAS_B25\TsDescrambler.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\TVCAS_B25\TsTable.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\TVCAS_B25\Main.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BonBaseClass.h">
+    <ClInclude Include="..\TVCAS_B25\UtilFileIO.h">
       <Filter>Header files</Filter>
     </ClInclude>
-    <ClInclude Include="CardReader.h">
+    <ClInclude Include="..\TVCAS_B25\IniConfig.h">
       <Filter>Header files</Filter>
     </ClInclude>
-    <ClInclude Include="CasCard.h">
+    <ClInclude Include="..\TVCAS_B25\BonBaseClass.h">
       <Filter>Header files</Filter>
     </ClInclude>
-    <ClInclude Include="Common.h">
+    <ClInclude Include="..\TVCAS_B25\MediaData.h">
       <Filter>Header files</Filter>
     </ClInclude>
-    <ClInclude Include="Exception.h">
+    <ClInclude Include="..\TVCAS_B25\TsUtilClass.h">
       <Filter>Header files</Filter>
     </ClInclude>
-    <ClInclude Include="MediaData.h">
+    <ClInclude Include="..\TVCAS_B25\Common.h">
       <Filter>Header files</Filter>
     </ClInclude>
-    <ClInclude Include="MediaDecoder.h">
+    <ClInclude Include="..\TVCAS_B25\MediaDecoder.h">
       <Filter>Header files</Filter>
     </ClInclude>
-    <ClInclude Include="Multi2Decoder.h">
+    <ClInclude Include="..\TVCAS_B25\Exception.h">
       <Filter>Header files</Filter>
     </ClInclude>
-    <ClInclude Include="stdafx.h">
+    <ClInclude Include="..\TVCAS_B25\Multi2Decoder.h">
       <Filter>Header files</Filter>
     </ClInclude>
-    <ClInclude Include="TsDescrambler.h">
+    <ClInclude Include="..\TVCAS_B25\stdafx.h">
       <Filter>Header files</Filter>
     </ClInclude>
-    <ClInclude Include="TsDescriptor.h">
+    <ClInclude Include="..\TVCAS_B25\StdUtil.h">
       <Filter>Header files</Filter>
     </ClInclude>
-    <ClInclude Include="TsPacketParser.h">
+    <ClInclude Include="..\TVCAS_B25\TsDescriptor.h">
       <Filter>Header files</Filter>
     </ClInclude>
-    <ClInclude Include="TsStream.h">
+    <ClInclude Include="..\TVCAS_B25\TsEncode.h">
       <Filter>Header files</Filter>
     </ClInclude>
-    <ClInclude Include="TsTable.h">
+    <ClInclude Include="..\TVCAS_B25\TsPacketParser.h">
       <Filter>Header files</Filter>
     </ClInclude>
-    <ClInclude Include="TsUtilClass.h">
+    <ClInclude Include="..\TVCAS_B25\TsStream.h">
       <Filter>Header files</Filter>
     </ClInclude>
-    <ClInclude Include="TVCAS.h">
+    <ClInclude Include="..\TVCAS_B25\TVCAS.h">
       <Filter>Header files</Filter>
     </ClInclude>
-    <ClInclude Include="StdUtil.h">
+    <ClInclude Include="..\TVCAS_B25\CasCard.h">
       <Filter>Header files</Filter>
     </ClInclude>
-    <ClInclude Include="TsEncode.h">
+    <ClInclude Include="..\TVCAS_B25\CardReader.h">
       <Filter>Header files</Filter>
     </ClInclude>
-    <ClInclude Include="TVCAS_B1.h">
+    <ClInclude Include="..\TVCAS_B25\TsDescrambler.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\TVCAS_B25\TsTable.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="Main.h">
       <Filter>Header files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -5,8 +5,8 @@
 #pragma once
 
 
-#include "BonBaseClass.h"
-#include "CardReader.h"
+#include "..\TVCAS_B25\BonBaseClass.h"
+#include "..\TVCAS_B25\CardReader.h"
 
 // ECMデータの最小/最大サイズ
 #define MIN_ECM_DATA_SIZE 30
@@ -55,6 +55,9 @@ public:
 		BYTE CardManufacturerID;		// Manufacturer identifier
 		BYTE CardVersion;				// Version
 		WORD CheckCode;					// Check code
+#ifdef TVCAS_B1_EXPORTS
+		WORD PairingMJD;				// Pairning MJD
+#endif
 	};
 
 	CCasCard();

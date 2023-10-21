@@ -2,9 +2,9 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#include "stdafx.h"
+#include "..\TVCAS_B25\stdafx.h"
 #include "TsStream.h"
-#include "TsUtilClass.h"
+#include "..\TVCAS_B25\TsUtilClass.h"
 
 #include <mmsystem.h>
 
